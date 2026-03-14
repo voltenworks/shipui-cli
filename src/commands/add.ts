@@ -4,7 +4,7 @@ import path from 'path'
 import { parseInput } from '../lib/parse.js'
 import { getProjectConfig } from '../lib/config.js'
 import { resolveToken } from '../lib/auth.js'
-import { fetchComponent, fetchRegistryIndex } from '../lib/api.js'
+import { fetchComponent, fetchRegistryIndexCached, checkMinVersion } from '../lib/api.js'
 import { writeComponentFiles, writeUtility } from '../lib/writer.js'
 import { mergeCss } from '../lib/css-merger.js'
 import { detectPackageManager, getMissingDeps, installDeps, checkTailwind } from '../lib/deps.js'
@@ -33,7 +33,8 @@ export const addCommand = new Command('add')
       // Get known themes for dash-syntax parsing
       let knownThemes: string[] | undefined
       try {
-        const index = await fetchRegistryIndex(config.registry)
+        const index = await fetchRegistryIndexCached(config.registry)
+        checkMinVersion(index)
         const themeSlugs = new Set<string>()
         for (const c of index.components) {
           for (const t of c.themes) {

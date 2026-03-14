@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
 import { getProjectConfig } from '../lib/config.js'
-import { fetchRegistryIndex } from '../lib/api.js'
+import { fetchRegistryIndexCached, checkMinVersion } from '../lib/api.js'
 
 export const listCommand = new Command('list')
   .description('List available ShipUI components')
@@ -11,7 +11,8 @@ export const listCommand = new Command('list')
   .action(async (options: { theme?: string; category?: string; free?: boolean }) => {
     try {
       const config = getProjectConfig()
-      const index = await fetchRegistryIndex(config.registry)
+      const index = await fetchRegistryIndexCached(config.registry)
+      checkMinVersion(index)
 
       let components = index.components
 

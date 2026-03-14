@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
 import { getProjectConfig } from '../lib/config.js'
-import { fetchRegistryIndex } from '../lib/api.js'
+import { fetchRegistryIndexCached } from '../lib/api.js'
 
 export const infoCommand = new Command('info')
   .description('Show details about a component')
@@ -9,7 +9,7 @@ export const infoCommand = new Command('info')
   .action(async (name: string) => {
     try {
       const config = getProjectConfig()
-      const index = await fetchRegistryIndex(config.registry)
+      const index = await fetchRegistryIndexCached(config.registry)
 
       const component = index.components.find(
         (c) => c.name === name.toLowerCase()

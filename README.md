@@ -1,71 +1,71 @@
-# shipui
+# @voltenworks/shipui
 
 Install [ShipUI](https://voltenworks.com/shipui) components into your project. Base components are free. Premium theme styling requires a theme purchase.
 
 ## Quick Start
 
 ```bash
-npx shipui add button
+npx @voltenworks/shipui add button
 ```
 
 ## Commands
 
-### `npx shipui add <name>`
+### `npx @voltenworks/shipui add <name>`
 
 Install a base component (free, no auth required).
 
 ```bash
-npx shipui add button
-npx shipui add badge
-npx shipui add card
+npx @voltenworks/shipui add button
+npx @voltenworks/shipui add badge
+npx @voltenworks/shipui add card
 ```
 
-### `npx shipui add <name> --theme <slug>`
+### `npx @voltenworks/shipui add <name> --theme <slug>`
 
 Install a component with premium theme styling.
 
 ```bash
-npx shipui add button --theme aloha
-npx shipui add card --theme retro
+npx @voltenworks/shipui add button --theme aloha
+npx @voltenworks/shipui add card --theme retro
 ```
 
-Free themes (like Candy) don't require auth. Paid themes require a purchase token via `shipui login`.
+Free themes (like Candy) don't require auth. Paid themes require a purchase token via `npx @voltenworks/shipui login`.
 
-### `npx shipui list`
+### `npx @voltenworks/shipui list`
 
 List available components and themes.
 
 ```bash
-npx shipui list
-npx shipui list --theme aloha
-npx shipui list --category ui
-npx shipui list --free
+npx @voltenworks/shipui list
+npx @voltenworks/shipui list --theme aloha
+npx @voltenworks/shipui list --category ui
+npx @voltenworks/shipui list --free
 ```
 
-### `npx shipui login`
+### `npx @voltenworks/shipui login`
 
 Authenticate with your purchase token (from your purchase confirmation email).
 
 ```bash
-npx shipui login
+npx @voltenworks/shipui login
 ```
 
 Tokens are stored in `~/.config/shipui/config.json` and persist across all projects.
 
-### `npx shipui init`
+### `npx @voltenworks/shipui init`
 
 Create a `shipui.json` config file for your project. Optional, sensible defaults are used without it.
 
 ```bash
-npx shipui init
+npx @voltenworks/shipui init
 ```
 
-### `npx shipui info <name>`
+### `npx @voltenworks/shipui info <name>`
 
 Show component details, available themes, and install commands.
 
 ```bash
-npx shipui info button
+npx @voltenworks/shipui info button
 ```
 
 ## Configuration

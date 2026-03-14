@@ -13,6 +13,19 @@ export function detectPackageManager(): PackageManager {
   return 'npm'
 }
 
+/** Check if Tailwind v4 is installed in the project. */
+export function checkTailwind(): 'installed' | 'missing' | 'outdated' {
+  const pkgPath = path.join(process.cwd(), 'node_modules', 'tailwindcss', 'package.json')
+  if (!fs.existsSync(pkgPath)) return 'missing'
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as { version?: string }
+    const major = parseInt(pkg.version?.split('.')[0] ?? '0', 10)
+    return major >= 4 ? 'installed' : 'outdated'
+  } catch {
+    return 'missing'
+  }
+}
+
 export function getMissingDeps(deps: string[]): string[] {
   const missing: string[] = []
   for (const dep of deps) {

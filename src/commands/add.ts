@@ -7,7 +7,7 @@ import { resolveToken } from '../lib/auth.js'
 import { fetchComponent, fetchRegistryIndex } from '../lib/api.js'
 import { writeComponentFiles, writeUtility } from '../lib/writer.js'
 import { mergeCss } from '../lib/css-merger.js'
-import { detectPackageManager, getMissingDeps, installDeps } from '../lib/deps.js'
+import { detectPackageManager, getMissingDeps, installDeps, checkTailwind } from '../lib/deps.js'
 import { confirmOverwrite, confirmInstallDeps } from '../lib/prompts.js'
 
 export const addCommand = new Command('add')
@@ -50,6 +50,15 @@ export const addCommand = new Command('add')
       console.log()
       if (options.dryRun) {
         console.log(chalk.yellow('DRY RUN, no files will be written\n'))
+      }
+
+      // Check for Tailwind v4
+      const twStatus = checkTailwind()
+      if (twStatus === 'missing') {
+        console.log(chalk.yellow('Warning: Tailwind CSS v4 is not installed. ShipUI components require Tailwind v4 for theme tokens to work.'))
+        console.log(chalk.dim('Install it with: npm install tailwindcss @tailwindcss/postcss\n'))
+      } else if (twStatus === 'outdated') {
+        console.log(chalk.yellow('Warning: ShipUI components require Tailwind CSS v4 or later. Please upgrade.\n'))
       }
 
       // Resolve token if theme is specified

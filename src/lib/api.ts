@@ -52,8 +52,15 @@ export interface ValidateResponse {
   email?: string
 }
 
+/** Ensure URL ends with trailing slash to avoid redirects that strip auth headers. */
+function withTrailingSlash(url: string): string {
+  const [base, query] = url.split('?')
+  const slashed = base.endsWith('/') ? base : base + '/'
+  return query ? `${slashed}?${query}` : slashed
+}
+
 export async function fetchRegistryIndex(registryUrl: string): Promise<RegistryIndex> {
-  const response = await fetch(registryUrl)
+  const response = await fetch(withTrailingSlash(registryUrl))
   if (!response.ok) {
     throw new Error(`Failed to fetch registry index: ${response.status}`)
   }
@@ -66,7 +73,7 @@ export async function fetchComponent(
   themeSlug?: string,
   token?: string | null,
 ): Promise<ComponentManifest> {
-  const url = new URL(`${registryUrl}/components/${name}`)
+  const url = new URL(`${registryUrl}/components/${name}/`)
   if (themeSlug) url.searchParams.set('theme', themeSlug)
 
   const headers: Record<string, string> = {}
@@ -83,7 +90,7 @@ export async function fetchComponent(
 }
 
 export async function validateToken(registryUrl: string, token: string): Promise<ValidateResponse> {
-  const url = `${registryUrl}/validate?token=${encodeURIComponent(token)}`
+  const url = `${registryUrl}/validate/?token=${encodeURIComponent(token)}`
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(`Validation failed: ${response.status}`)

@@ -17,7 +17,7 @@ export interface GlobalConfig {
   tokens: Record<string, string>
 }
 
-const DEFAULT_REGISTRY = 'https://voltenworks.com/api/registry'
+const DEFAULT_REGISTRY = 'https://www.voltenworks.com/api/registry'
 
 const DEFAULT_PATHS = {
   components: 'src/components',

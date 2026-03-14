@@ -75,7 +75,7 @@ npx @voltenworks/shipui info button
 ```json
 {
   "$schemaVersion": 1,
-  "registry": "https://voltenworks.com/api/registry",
+  "registry": "https://www.voltenworks.com/api/registry",
   "paths": {
     "components": "src/components",
     "lib": "src/lib",

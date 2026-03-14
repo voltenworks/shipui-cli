@@ -18,7 +18,7 @@ export const initCommand = new Command('init')
 
       const config = {
         $schemaVersion: 1,
-        registry: 'https://voltenworks.com/api/registry',
+        registry: 'https://www.voltenworks.com/api/registry',
         paths: {
           components: 'src/components',
           lib: 'src/lib',

@@ -68,6 +68,14 @@ Show component details, available themes, and install commands.
 npx @voltenworks/shipui info button
 ```
 
+### `npx @voltenworks/shipui doctor`
+
+Check your project setup for ShipUI compatibility. Verifies Node version, Tailwind v4, PostCSS config, CSS file, auth tokens, registry connectivity, and dependencies.
+
+```bash
+npx @voltenworks/shipui doctor
+```
+
 ## Configuration
 
 ### `shipui.json` (optional)

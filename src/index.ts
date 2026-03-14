@@ -8,6 +8,7 @@ import { listCommand } from './commands/list.js'
 import { loginCommand } from './commands/login.js'
 import { initCommand } from './commands/init.js'
 import { infoCommand } from './commands/info.js'
+import { doctorCommand } from './commands/doctor.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8')) as { version: string }
@@ -24,5 +25,6 @@ program.addCommand(listCommand)
 program.addCommand(loginCommand)
 program.addCommand(initCommand)
 program.addCommand(infoCommand)
+program.addCommand(doctorCommand)
 
 program.parse()

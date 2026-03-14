@@ -36,7 +36,7 @@ export const loginCommand = new Command('login')
       if (result.email) {
         console.log(chalk.dim(`Account: ${result.email}`))
       }
-      console.log(`\nYou can now install themed components with: ${chalk.bold('npx shipui add <name> --theme <slug>')}`)
+      console.log(`\nYou can now install themed components with: ${chalk.bold('npx @voltenworks/shipui add <name> --theme <slug>')}`)
       console.log()
 
     } catch (error) {

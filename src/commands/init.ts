@@ -65,7 +65,7 @@ export const initCommand = new Command('init')
 
       await fs.writeJson(configPath, config, { spaces: 2 })
       console.log(chalk.green('Created shipui.json'))
-      console.log(`\nRun ${chalk.bold('npx shipui add button')} to install your first component.`)
+      console.log(`\nRun ${chalk.bold('npx @voltenworks/shipui add button')} to install your first component.`)
       console.log()
 
     } catch (error) {

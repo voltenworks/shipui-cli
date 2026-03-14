@@ -1,0 +1,10 @@
+{
+  "$schemaVersion": 1,
+  "registry": "https://voltenworks.com/api/registry",
+  "paths": {
+    "components": "src/components",
+    "lib": "src/lib",
+    "css": "src/app/globals.css"
+  },
+  "importAlias": "@/"
+}

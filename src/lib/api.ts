@@ -74,7 +74,7 @@ export async function fetchComponent(
 
   const response = await fetch(url.toString(), { headers })
   if (response.status === 404) {
-    throw new Error(`Component "${name}" not found. Run \`npx shipui list\` to see available components.`)
+    throw new Error(`Component "${name}" not found. Run \`npx @voltenworks/shipui list\` to see available components.`)
   }
   if (!response.ok) {
     throw new Error(`Registry error: ${response.status}`)

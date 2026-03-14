@@ -64,8 +64,8 @@ export const listCommand = new Command('list')
       }
 
       console.log()
-      console.log(`Install: ${chalk.bold('npx shipui add <name>')}`)
-      console.log(`With theme: ${chalk.bold('npx shipui add <name> --theme <slug>')}`)
+      console.log(`Install: ${chalk.bold('npx @voltenworks/shipui add <name>')}`)
+      console.log(`With theme: ${chalk.bold('npx @voltenworks/shipui add <name> --theme <slug>')}`)
       console.log()
 
     } catch (error) {

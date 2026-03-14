@@ -17,7 +17,7 @@ export const infoCommand = new Command('info')
 
       if (!component) {
         console.log(chalk.red(`Component "${name}" not found.`))
-        console.log(`Run ${chalk.bold('npx shipui list')} to see available components.`)
+        console.log(`Run ${chalk.bold('npx @voltenworks/shipui list')} to see available components.`)
         process.exit(1)
       }
 
@@ -38,9 +38,9 @@ export const infoCommand = new Command('info')
 
       console.log()
       console.log(chalk.bold('Install:'))
-      console.log(`  ${chalk.cyan(`npx shipui add ${name}`)}`)
+      console.log(`  ${chalk.cyan(`npx @voltenworks/shipui add ${name}`)}`)
       if (component.themes.length > 0) {
-        console.log(`  ${chalk.cyan(`npx shipui add ${name} --theme ${component.themes[0].themeSlug}`)}`)
+        console.log(`  ${chalk.cyan(`npx @voltenworks/shipui add ${name} --theme ${component.themes[0].themeSlug}`)}`)
       }
       console.log()
 

@@ -11,7 +11,7 @@ const program = new Command()
 program
   .name('shipui')
   .description('Install ShipUI components into your project')
-  .version('0.1.1')
+  .version('0.1.2')
 
 program.addCommand(addCommand)
 program.addCommand(listCommand)

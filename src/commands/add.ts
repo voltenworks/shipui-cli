@@ -147,10 +147,10 @@ export const addCommand = new Command('add')
         console.log(chalk.green(`Installed ${manifest.displayName} (base).`))
         console.log(chalk.yellow(`Premium ${manifest.themeSlug?.toUpperCase()} styling requires a purchase:`))
         console.log(chalk.cyan(manifest.purchaseUrl ?? ''))
-        console.log(`\nOr run: ${chalk.bold('npx shipui login')} after purchasing.`)
+        console.log(`\nOr run: ${chalk.bold('npx @voltenworks/shipui login')} after purchasing.`)
       } else {
         console.log(chalk.green(`Installed ${manifest.displayName} (base).`))
-        console.log(`Add theme styling: ${chalk.bold(`npx shipui add ${parsed.componentName} --theme <slug>`)}`)
+        console.log(`Add theme styling: ${chalk.bold(`npx @voltenworks/shipui add ${parsed.componentName} --theme <slug>`)}`)
       }
 
       // Usage example

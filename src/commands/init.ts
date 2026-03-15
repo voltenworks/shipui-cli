@@ -16,7 +16,7 @@ export const initCommand = new Command('init')
         return
       }
 
-      const config = {
+      const config: Record<string, unknown> = {
         $schemaVersion: 1,
         registry: 'https://www.voltenworks.com/api/registry',
         paths: {
@@ -53,14 +53,23 @@ export const initCommand = new Command('init')
             message: 'Import alias:',
             initial: '@/',
           },
+          {
+            type: 'text',
+            name: 'theme',
+            message: 'Default theme (optional, e.g. folio, retro):',
+            initial: '',
+          },
         ])
 
         config.paths = {
-          components: responses.components ?? config.paths.components,
-          lib: responses.lib ?? config.paths.lib,
-          css: responses.css ?? config.paths.css,
+          components: responses.components ?? (config.paths as Record<string, string>).components,
+          lib: responses.lib ?? (config.paths as Record<string, string>).lib,
+          css: responses.css ?? (config.paths as Record<string, string>).css,
         }
         config.importAlias = responses.importAlias ?? config.importAlias
+        if (responses.theme) {
+          config.theme = responses.theme
+        }
       }
 
       await fs.writeJson(configPath, config, { spaces: 2 })

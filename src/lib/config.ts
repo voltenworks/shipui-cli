@@ -5,6 +5,7 @@ import { getGlobalConfigPath } from './paths.js'
 export interface ProjectConfig {
   $schemaVersion: number
   registry: string
+  theme?: string
   paths: {
     components: string
     lib: string
@@ -35,6 +36,7 @@ export function getProjectConfig(): ProjectConfig {
     return {
       $schemaVersion: raw.$schemaVersion ?? 1,
       registry: raw.registry ?? DEFAULT_REGISTRY,
+      theme: (raw as Record<string, unknown>).theme as string | undefined,
       paths: {
         components: raw.paths?.components ?? DEFAULT_PATHS.components,
         lib: raw.paths?.lib ?? DEFAULT_PATHS.lib,

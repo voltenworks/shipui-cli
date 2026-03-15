@@ -12,12 +12,21 @@ export interface RegistryFile {
   hash: string
 }
 
+export interface ThemeFont {
+  import: string
+  name: string
+  variable: string
+  weight: string[]
+  style: string[]
+}
+
 export interface ThemeOverlay {
   themeSlug: string
   themeName: string
   themeTokens: string
   componentCss: string
   mode: 'light' | 'dark'
+  fonts?: ThemeFont[]
 }
 
 export interface ComponentManifest {
@@ -53,12 +62,47 @@ export interface RegistryIndex {
       themePrice: number
     }[]
   }[]
+  starters?: StarterIndexEntry[]
 }
 
 export interface ValidateResponse {
   valid: boolean
   product?: string
   email?: string
+}
+
+export interface StarterProvider {
+  name: string
+  displayName: string
+  env: string[]
+  postInstall: string[]
+  notes: string | null
+}
+
+export interface StarterManifest {
+  version: number
+  kind: 'starter'
+  name: string
+  displayName: string
+  files: RegistryFile[]
+  registryDependencies: string[]
+  npmDependencies: string[]
+  theme: ThemeOverlay | null
+  themeAccess?: 'unauthorized'
+  themeSlug?: string
+  purchaseUrl?: string
+  provider: StarterProvider | null
+  usage: string | null
+  variantSnippets: string[]
+  updatedAt: string
+}
+
+export interface StarterIndexEntry {
+  name: string
+  displayName: string
+  category: string
+  description: string
+  providers: string[]
 }
 
 /** Ensure URL ends with trailing slash to avoid redirects that strip auth headers. */
@@ -100,6 +144,36 @@ export async function fetchComponent(
     throw new Error(`Registry error: ${response.status}`)
   }
   return response.json() as Promise<ComponentManifest>
+}
+
+export async function fetchStarter(
+  registryUrl: string,
+  name: string,
+  themeSlug?: string,
+  provider?: string,
+  token?: string | null,
+): Promise<StarterManifest> {
+  const url = new URL(`${registryUrl}/starters/${name}/`)
+  if (themeSlug) url.searchParams.set('theme', themeSlug)
+  if (provider) url.searchParams.set('provider', provider)
+
+  const headers: Record<string, string> = {
+    'x-shipui-cli-version': cliPkg.version,
+  }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const response = await fetch(url.toString(), { headers })
+  if (response.status === 404) {
+    throw new Error(`Starter "${name}" not found. Run \`npx @voltenworks/shipui list\` to see available starters.`)
+  }
+  if (response.status === 400) {
+    const body = await response.json() as { error?: string }
+    throw new Error(body.error ?? `Bad request: ${response.status}`)
+  }
+  if (!response.ok) {
+    throw new Error(`Registry error: ${response.status}`)
+  }
+  return response.json() as Promise<StarterManifest>
 }
 
 export async function fetchRegistryIndexCached(registryUrl: string): Promise<RegistryIndex> {

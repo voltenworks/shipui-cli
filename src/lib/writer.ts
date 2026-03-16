@@ -245,15 +245,15 @@ export async function updateLayoutFonts(
   }
 
   // Replace or append className on body tag
-  if (/className=\{`[^`]*`\}/.test(updated)) {
-    // Append font variables to existing template literal content
+  if (/<body[^>]*className=\{`[^`]*`\}/.test(updated)) {
+    // Append font variables to existing template literal content on body tag
     updated = updated.replace(
-      /className=\{`([^`]*)`\}/,
-      (_, existing) => {
+      /(<body[^>]*className=\{`)([^`]*)(`\})/,
+      (_, prefix, existing) => {
         const trimmed = existing.trim()
         return trimmed
-          ? `className={\`${trimmed} ${classNameExpr}\`}`
-          : `className={\`${classNameExpr}\`}`
+          ? `${prefix}${trimmed} ${classNameExpr}\`}`
+          : `${prefix}${classNameExpr}\`}`
       },
     )
   } else if (/<body\s+className="([^"]*)"/.test(updated)) {

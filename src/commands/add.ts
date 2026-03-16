@@ -270,6 +270,8 @@ async function installComponent(
     console.log(chalk.dim(manifest.usage))
   }
   console.log()
+  console.log(chalk.dim(`  ShipUI Themes: ${chalk.cyan('https://www.voltenworks.com/shipui/')}`))
+  console.log()
 }
 
 // ---------- Starter install ----------
@@ -786,6 +788,8 @@ function printStarterSummary(
     console.log(`  Or run: ${chalk.bold('npx @voltenworks/shipui login')} after purchasing.`)
   }
 
+  console.log()
+  console.log(chalk.dim(`  ShipUI Themes: ${chalk.cyan('https://www.voltenworks.com/shipui/')}`))
   console.log()
 }
 

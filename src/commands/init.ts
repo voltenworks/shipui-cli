@@ -236,6 +236,8 @@ async function newProjectFlow(options: { yes?: boolean; theme?: string; features
   }
 
   console.log()
+  console.log(chalk.dim(`  ShipUI Themes: ${chalk.cyan('https://www.voltenworks.com/shipui/')}`))
+  console.log()
 }
 
 // ---------- Existing project setup ----------

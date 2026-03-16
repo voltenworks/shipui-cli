@@ -70,8 +70,16 @@ describe('parseInput', () => {
       })
     })
 
-    it('matches the longest theme prefix first', () => {
-      // If themes list has "solar" before checking, "solar-button" should match
+    it('matches the longest theme prefix when themes overlap', () => {
+      const themes = ['solar', 'solar-dark']
+      // "solar-dark-button" should match "solar-dark" (longer), not "solar"
+      expect(parseInput('solar-dark-button', undefined, themes)).toEqual({
+        componentName: 'button',
+        themeSlug: 'solar-dark',
+      })
+    })
+
+    it('matches shorter theme when longer does not apply', () => {
       const themes = ['solar', 'solar-dark']
       expect(parseInput('solar-button', undefined, themes)).toEqual({
         componentName: 'button',

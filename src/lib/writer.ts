@@ -74,7 +74,14 @@ export async function writeStarterFiles(
     ? config.paths.components.split('/').slice(0, -1).join('/') + '/'
     : ''
 
+  const projectRoot = path.resolve(process.cwd())
+
   for (const file of files) {
+    // Validate path does not escape project directory
+    if (path.isAbsolute(file.path) || path.normalize(file.path).startsWith('..')) {
+      throw new Error(`Unsafe file path in starter: ${file.path}`)
+    }
+
     let targetPath: string
     if (file.path.startsWith('components/')) {
       targetPath = path.join(process.cwd(), config.paths.components, file.path.slice('components/'.length))
@@ -86,6 +93,11 @@ export async function writeStarterFiles(
       targetPath = path.join(process.cwd(), prefix + file.path)
     } else {
       targetPath = path.join(process.cwd(), prefix + file.path)
+    }
+
+    // Final check: resolved path must stay within project root
+    if (path.relative(projectRoot, path.resolve(targetPath)).startsWith('..')) {
+      throw new Error(`File path escapes project directory: ${file.path}`)
     }
 
     // Check if file exists (abort check happens before this function in add.ts)
@@ -220,25 +232,36 @@ export async function updateLayoutFonts(
     }
   }
 
-  // Replace or add className on body tag
+  // Replace or append className on body tag
   if (/className=\{`[^`]*`\}/.test(updated)) {
+    // Append font variables to existing template literal content
     updated = updated.replace(
-      /className=\{`[^`]*`\}/,
-      `className={\`${classNameExpr}\`}`,
+      /className=\{`([^`]*)`\}/,
+      (_, existing) => {
+        const trimmed = existing.trim()
+        return trimmed
+          ? `className={\`${trimmed} ${classNameExpr}\`}`
+          : `className={\`${classNameExpr}\`}`
+      },
+    )
+  } else if (/<body\s+className="([^"]*)"/.test(updated)) {
+    // Convert string className to template literal and append
+    updated = updated.replace(
+      /<body\s+className="([^"]*)"/,
+      `<body className={\`$1 ${classNameExpr}\`}`,
+    )
+  } else if (/<body\s+className=\{([^}]+)\}/.test(updated)) {
+    // Handle JSX expression className — wrap with template literal
+    updated = updated.replace(
+      /<body\s+className=\{([^}]+)\}/,
+      `<body className={\`${classNameExpr}\`}`,
     )
   } else {
-    // No template literal className — add one to <body>
+    // No className — add one to bare <body>
     updated = updated.replace(
       /<body>/,
       `<body className={\`${classNameExpr}\`}>`,
     )
-    // Also handle <body className="..."> or <body className={...}>
-    if (!updated.includes(classNameExpr)) {
-      updated = updated.replace(
-        /<body\s+className="([^"]*)"/,
-        `<body className={\`$1 ${classNameExpr}\`}`,
-      )
-    }
   }
 
   await fs.writeFile(layoutPath, updated, 'utf-8')

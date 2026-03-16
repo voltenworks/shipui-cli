@@ -192,8 +192,12 @@ export async function fetchStarter(
     throw new Error(`Starter "${name}" not found. Run \`npx @voltenworks/shipui list\` to see available starters.`)
   }
   if (response.status === 400) {
-    const body = await response.json() as { error?: string }
-    throw new Error(body.error ?? `Bad request: ${response.status}`)
+    let message = `Bad request: ${response.status}`
+    try {
+      const body = await response.json() as { error?: string }
+      if (body.error) message = body.error
+    } catch { /* non-JSON response */ }
+    throw new Error(message)
   }
   if (!response.ok) {
     throw new Error(`Registry error: ${response.status}`)
@@ -218,9 +222,15 @@ export async function fetchBlueprint(
     throw new Error(`Theme "${slug}" not found.`)
   }
   if (response.status === 403) {
-    const body = await response.json() as { error?: string; purchaseUrl?: string }
+    let errorMsg = 'Authentication required'
+    let purchaseUrl = ''
+    try {
+      const body = await response.json() as { error?: string; purchaseUrl?: string }
+      if (body.error) errorMsg = body.error
+      if (body.purchaseUrl) purchaseUrl = body.purchaseUrl
+    } catch { /* non-JSON response */ }
     throw new Error(
-      `${body.error ?? 'Authentication required'}.${body.purchaseUrl ? ` Purchase at: ${body.purchaseUrl}` : ''}\nRun \`npx @voltenworks/shipui login\` after purchasing.`,
+      `${errorMsg}.${purchaseUrl ? ` Purchase at: ${purchaseUrl}` : ''}\nRun \`npx @voltenworks/shipui login\` after purchasing.`,
     )
   }
   if (!response.ok) {

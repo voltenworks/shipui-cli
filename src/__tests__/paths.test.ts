@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import os from 'os'
+import path from 'path'
 
 vi.mock('os', () => ({
   default: {
@@ -21,20 +22,20 @@ describe('getGlobalConfigPath', () => {
   it('returns XDG path on Linux', () => {
     mockOs.platform.mockReturnValue('linux')
     const result = getGlobalConfigPath()
-    expect(result).toBe('/home/user/.config/shipui/config.json')
+    expect(result).toBe(path.join('/home/user', '.config', 'shipui', 'config.json'))
   })
 
   it('respects XDG_CONFIG_HOME on Linux', () => {
     mockOs.platform.mockReturnValue('linux')
     process.env.XDG_CONFIG_HOME = '/custom/config'
     const result = getGlobalConfigPath()
-    expect(result).toBe('/custom/config/shipui/config.json')
+    expect(result).toBe(path.join('/custom/config', 'shipui', 'config.json'))
   })
 
   it('returns .config path on macOS', () => {
     mockOs.platform.mockReturnValue('darwin')
     const result = getGlobalConfigPath()
-    expect(result).toBe('/home/user/.config/shipui/config.json')
+    expect(result).toBe(path.join('/home/user', '.config', 'shipui', 'config.json'))
   })
 
   it('returns APPDATA path on Windows', () => {

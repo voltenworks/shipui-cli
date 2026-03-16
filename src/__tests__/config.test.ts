@@ -151,6 +151,13 @@ describe('detectThemeProject', () => {
     expect(detectThemeProject('src/app/globals.css')).toBeNull()
   })
 
+  it('detects hyphenated theme slugs', () => {
+    mockFs.readFileSync.mockReturnValue(
+      '/* shipui:theme:solar-dark:start */\n:root { }\n/* shipui:theme:solar-dark:end */',
+    )
+    expect(detectThemeProject('src/app/globals.css')).toBe('solar-dark')
+  })
+
   it('returns null when file does not exist', () => {
     mockFs.readFileSync.mockImplementation(() => {
       throw new Error('ENOENT')

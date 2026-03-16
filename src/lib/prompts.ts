@@ -88,6 +88,7 @@ export async function promptAuthConflict(): Promise<'wiring' | 'replace' | 'canc
  * Prompt for theme selection from a list.
  */
 export async function promptTheme(themes: { slug: string; name: string; free: boolean }[]): Promise<string | null> {
+  if (themes.length === 0) return null
   const response = await promptsLib({
     type: 'select',
     name: 'theme',

@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
 import { parseInput } from '../lib/parse.js'
-import { getProjectConfig, detectProjectType, updateFeature } from '../lib/config.js'
+import { getProjectConfig, saveProjectConfig, detectProjectType, updateFeature } from '../lib/config.js'
 import { resolveToken } from '../lib/auth.js'
 import {
   fetchComponent,
@@ -53,7 +53,6 @@ export const addCommand = new Command('add')
 
       // Create shipui.json if missing
       if (!fs.existsSync(path.join(process.cwd(), 'shipui.json'))) {
-        const { saveProjectConfig } = await import('../lib/config.js')
         saveProjectConfig(config)
         console.log(chalk.dim('Created shipui.json\n'))
       }
@@ -104,7 +103,7 @@ export const addCommand = new Command('add')
           if (options.yes) {
             // Non-interactive mode requires explicit provider for auth
             if (name.toLowerCase() === 'auth') {
-              console.log(chalk.red(`Specify a provider: \`add auth clerk --yes\``))
+              console.log(chalk.red(`Specify a provider: \`add auth --provider clerk --yes\``))
               process.exit(1)
             }
           } else {
@@ -182,6 +181,7 @@ async function installComponent(
 
   // Check for existing files
   if (!options.overwrite && !options.yes) {
+    const fsExtra = await import('fs-extra')
     for (const file of manifest.files) {
       let targetPath: string
       if (file.path.startsWith('components/')) {
@@ -189,7 +189,6 @@ async function installComponent(
       } else {
         targetPath = path.join(process.cwd(), config.paths.components, file.path)
       }
-      const fsExtra = await import('fs-extra')
       if (fsExtra.default.existsSync(targetPath)) {
         const confirmed = await confirmOverwrite(path.relative(process.cwd(), targetPath))
         if (!confirmed) {
@@ -404,7 +403,7 @@ async function installStarter(
       } else {
         // Install prerequisite component
         console.log(`\nInstalling dependency: ${dep}...`)
-        const depManifest = await (await import('../lib/api.js')).fetchComponent(
+        const depManifest = await fetchComponent(
           config.registry,
           dep,
           options.theme,
@@ -421,7 +420,7 @@ async function installStarter(
           })
         }
 
-        const depResult = await (await import('../lib/writer.js')).writeComponentFiles(
+        const depResult = await writeComponentFiles(
           depManifest.files,
           config,
           { overwrite: options.overwrite ?? false, dryRun: options.dryRun ?? false },
@@ -596,11 +595,17 @@ async function installAuthWiringOnly(
       await fsExtra.default.writeFile(envExamplePath, envLines, 'utf-8')
       console.log(`  ${chalk.green('+')} .env.example`)
     } else {
-      // Append any missing vars (check by key name, not full string)
+      // Append any missing vars (check by exact key name)
       const existing = await fsExtra.default.readFile(envExamplePath, 'utf-8')
+      const existingKeys = new Set(
+        existing.split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line && !line.startsWith('#'))
+          .map((line) => line.split('=')[0]),
+      )
       const missing = manifest.provider.env.filter((e) => {
         const key = e.split('=')[0]
-        return !existing.includes(key)
+        return !existingKeys.has(key)
       })
       if (missing.length > 0) {
         const missingLines = missing.map((e) => e.includes('=') ? e : `${e}=`).join('\n') + '\n'
@@ -844,7 +849,7 @@ function detectInstalledTheme(cssPath: string): string | null {
   const fullPath = path.join(process.cwd(), cssPath)
   try {
     const css = fs.readFileSync(fullPath, 'utf-8')
-    const match = css.match(/\/\* shipui:theme:(\w+):start \*\//)
+    const match = css.match(/\/\* shipui:theme:([\w-]+):start \*\//)
     return match ? match[1] : null
   } catch {
     return null

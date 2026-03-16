@@ -20,8 +20,10 @@ export function parseInput(input: string, themeFlag?: string, knownThemes?: stri
   }
 
   // Check for dash syntax: "aloha-button" (only if we know the theme list)
+  // Sort by longest prefix first so "solar-dark" matches before "solar"
   if (knownThemes) {
-    for (const theme of knownThemes) {
+    const sorted = [...knownThemes].sort((a, b) => b.length - a.length)
+    for (const theme of sorted) {
       if (input.toLowerCase().startsWith(`${theme}-`)) {
         const componentName = input.slice(theme.length + 1).toLowerCase()
         if (componentName) {

@@ -138,7 +138,7 @@ export function detectThemeProject(cssPath: string): string | null {
   const fullPath = path.join(process.cwd(), cssPath)
   try {
     const css = fs.readFileSync(fullPath, 'utf-8')
-    const match = css.match(/\/\* shipui:theme:(\w+):start \*\//)
+    const match = css.match(/\/\* shipui:theme:([\w-]+):start \*\//)
     return match ? match[1] : null
   } catch {
     return null

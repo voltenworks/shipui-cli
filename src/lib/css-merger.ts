@@ -34,7 +34,7 @@ export async function mergeCss(
   const hasThemeBlock = css.includes(themeStart)
 
   // Check for a DIFFERENT theme block (conflict)
-  const otherThemeMatch = css.match(/\/\* shipui:theme:(\w+):start \*\//)
+  const otherThemeMatch = css.match(/\/\* shipui:theme:([\w-]+):start \*\//)
   if (otherThemeMatch && otherThemeMatch[1] !== theme.themeSlug && !options.force) {
     results.push({
       action: 'conflict',

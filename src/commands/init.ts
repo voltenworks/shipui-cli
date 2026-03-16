@@ -109,12 +109,16 @@ async function newProjectFlow(options: { yes?: boolean; theme?: string; features
 
   // Step 3: Choose auth provider if auth selected
   let authProvider: string | null = options.provider ?? null
-  if (selectedFeatures.includes('auth') && !authProvider && !options.yes) {
-    // For now, only Clerk
-    authProvider = await promptProvider([{ name: 'clerk', displayName: 'Clerk' }])
-    if (!authProvider) {
-      console.log(chalk.yellow('Auth provider selection cancelled. Skipping auth.'))
-      selectedFeatures = selectedFeatures.filter((f) => f !== 'auth')
+  if (selectedFeatures.includes('auth') && !authProvider) {
+    if (options.yes) {
+      // Default to Clerk in non-interactive mode
+      authProvider = 'clerk'
+    } else {
+      authProvider = await promptProvider([{ name: 'clerk', displayName: 'Clerk' }])
+      if (!authProvider) {
+        console.log(chalk.yellow('Auth provider selection cancelled. Skipping auth.'))
+        selectedFeatures = selectedFeatures.filter((f) => f !== 'auth')
+      }
     }
   }
 
@@ -172,7 +176,11 @@ async function newProjectFlow(options: { yes?: boolean; theme?: string; features
     importAlias: '@/',
   }
 
-  // Step 7: Install selected features
+  // Persist base config before installing starters so partial failures leave a valid project
+  saveProjectConfig(config)
+  console.log(`  ${chalk.green('+')} shipui.json`)
+
+  // Step 8: Install selected features
   for (const feature of selectedFeatures) {
     console.log()
     console.log(`Installing ${feature} starter...`)
@@ -195,10 +203,10 @@ async function newProjectFlow(options: { yes?: boolean; theme?: string; features
     }
   }
 
+  // Re-save with updated features
   saveProjectConfig(config)
-  console.log(`  ${chalk.green('+')} shipui.json`)
 
-  // Step 8: Install dependencies
+  // Step 9: Install dependencies
   const allDeps: string[] = []
   if (selectedFeatures.includes('auth')) {
     allDeps.push('zod')
@@ -324,8 +332,16 @@ async function existingProjectSetup(options: { yes?: boolean; theme?: string; fe
 // ---------- Blueprint file writer ----------
 
 async function writeBlueprintFiles(blueprint: BlueprintManifest): Promise<void> {
+  const srcDir = path.resolve(process.cwd(), 'src')
   for (const file of blueprint.files) {
-    const targetPath = path.join(process.cwd(), 'src', file.path)
+    // Validate path does not escape src/ directory
+    if (path.isAbsolute(file.path) || path.normalize(file.path).startsWith('..')) {
+      throw new Error(`Unsafe file path in blueprint: ${file.path}`)
+    }
+    const targetPath = path.resolve(srcDir, file.path)
+    if (path.relative(srcDir, targetPath).startsWith('..')) {
+      throw new Error(`File path escapes project directory: ${file.path}`)
+    }
     await fs.ensureDir(path.dirname(targetPath))
     await fs.writeFile(targetPath, file.content, 'utf-8')
     console.log(`  ${chalk.green('+')} src/${file.path}`)

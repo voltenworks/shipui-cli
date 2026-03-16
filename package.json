@@ -1,6 +1,6 @@
 {
   "name": "@voltenworks/shipui",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Install ShipUI components into your project",
   "bin": {
     "shipui": "./dist/index.js"

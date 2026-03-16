@@ -19,7 +19,14 @@ export async function writeComponentFiles(
 ): Promise<WriteResult> {
   const result: WriteResult = { written: [], skipped: [] }
 
+  const projectRoot = path.resolve(process.cwd())
+
   for (const file of files) {
+    // Validate path does not escape project directory
+    if (path.isAbsolute(file.path) || path.normalize(file.path).startsWith('..')) {
+      throw new Error(`Unsafe file path in component: ${file.path}`)
+    }
+
     // Map file path: "components/ui/Button.tsx" -> "<config.paths.components>/ui/Button.tsx"
     let targetPath: string
     if (file.path.startsWith('components/')) {
@@ -28,6 +35,11 @@ export async function writeComponentFiles(
       targetPath = path.join(process.cwd(), config.paths.lib, file.path.slice('lib/'.length))
     } else {
       targetPath = path.join(process.cwd(), config.paths.components, file.path)
+    }
+
+    // Final check: resolved path must stay within project root
+    if (path.relative(projectRoot, path.resolve(targetPath)).startsWith('..')) {
+      throw new Error(`File path escapes project directory: ${file.path}`)
     }
 
     // Check if file exists
@@ -250,12 +262,26 @@ export async function updateLayoutFonts(
       /<body\s+className="([^"]*)"/,
       `<body className={\`$1 ${classNameExpr}\`}`,
     )
-  } else if (/<body\s+className=\{([^}]+)\}/.test(updated)) {
-    // Handle JSX expression className — preserve existing expression and append fonts
-    updated = updated.replace(
-      /<body\s+className=\{([^}]+)\}/,
-      (_, existing) => `<body className={\`\${${existing.trim()}} ${classNameExpr}\`}`,
-    )
+  } else if (/<body\s+className=\{/.test(updated)) {
+    // Handle JSX expression className with balanced-brace parsing to support nested braces
+    const bodyMatch = updated.match(/<body\s+className=\{/)
+    if (bodyMatch && bodyMatch.index !== undefined) {
+      const braceStart = bodyMatch.index + bodyMatch[0].length - 1 // index of opening {
+      let depth = 1
+      let i = braceStart + 1
+      while (i < updated.length && depth > 0) {
+        if (updated[i] === '{') depth++
+        else if (updated[i] === '}') depth--
+        i++
+      }
+      if (depth === 0) {
+        const existing = updated.slice(braceStart + 1, i - 1).trim()
+        const before = updated.slice(0, bodyMatch.index)
+        const after = updated.slice(i)
+        // Preserve any other attributes that follow the className
+        updated = `${before}<body className={\`\${${existing}} ${classNameExpr}\`}${after}`
+      }
+    }
   } else {
     // No className — add one to bare <body>
     updated = updated.replace(

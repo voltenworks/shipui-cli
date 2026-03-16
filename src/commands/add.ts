@@ -800,13 +800,14 @@ export async function installStarterFromInit(
     provider?: string
     yes?: boolean
     overwrite?: boolean
+    dryRun?: boolean
     force?: boolean
     token?: string
   },
 ): Promise<void> {
   await installStarter(name, config, {
     ...options,
-    dryRun: false,
+    dryRun: options.dryRun ?? false,
   })
 }
 

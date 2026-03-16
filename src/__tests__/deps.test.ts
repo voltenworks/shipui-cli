@@ -6,11 +6,11 @@ vi.mock('fs')
 vi.mock('child_process')
 
 import { detectPackageManager, checkTailwind, getMissingDeps, installDeps } from '../lib/deps.js'
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 
 const mockExistsSync = vi.mocked(fs.existsSync)
 const mockReadFileSync = vi.mocked(fs.readFileSync)
-const mockExecSync = vi.mocked(execSync)
+const mockExecFileSync = vi.mocked(execFileSync)
 
 describe('detectPackageManager', () => {
   beforeEach(() => {
@@ -107,32 +107,36 @@ describe('getMissingDeps', () => {
 describe('installDeps', () => {
   it('uses npm install', () => {
     installDeps(['clsx', 'tailwind-merge'], 'npm')
-    expect(mockExecSync).toHaveBeenCalledWith(
-      'npm install clsx tailwind-merge',
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'npm',
+      ['install', 'clsx', 'tailwind-merge'],
       expect.objectContaining({ stdio: 'inherit' }),
     )
   })
 
   it('uses yarn add', () => {
     installDeps(['clsx'], 'yarn')
-    expect(mockExecSync).toHaveBeenCalledWith(
-      'yarn add clsx',
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'yarn',
+      ['add', 'clsx'],
       expect.objectContaining({ stdio: 'inherit' }),
     )
   })
 
   it('uses pnpm add', () => {
     installDeps(['clsx'], 'pnpm')
-    expect(mockExecSync).toHaveBeenCalledWith(
-      'pnpm add clsx',
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'pnpm',
+      ['add', 'clsx'],
       expect.objectContaining({ stdio: 'inherit' }),
     )
   })
 
   it('uses bun add', () => {
     installDeps(['clsx'], 'bun')
-    expect(mockExecSync).toHaveBeenCalledWith(
-      'bun add clsx',
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'bun',
+      ['add', 'clsx'],
       expect.objectContaining({ stdio: 'inherit' }),
     )
   })

@@ -105,6 +105,31 @@ export interface StarterIndexEntry {
   providers: string[]
 }
 
+export interface BlueprintFile {
+  path: string
+  content: string
+  hash: string
+}
+
+export interface BlueprintManifest {
+  version: number
+  kind: 'blueprint'
+  slug: string
+  themeId: string
+  themeName: string
+  mode: 'light' | 'dark'
+  accentColor: string | null
+  fonts: ThemeFont[]
+  features: {
+    hasAuth: boolean
+    hasDashboard: boolean
+    hasForgotPassword: boolean
+  }
+  npmDependencies?: string[]
+  files: BlueprintFile[]
+  updatedAt: string
+}
+
 /** Ensure URL ends with trailing slash to avoid redirects that strip auth headers. */
 function withTrailingSlash(url: string): string {
   const [base, query] = url.split('?')
@@ -174,6 +199,34 @@ export async function fetchStarter(
     throw new Error(`Registry error: ${response.status}`)
   }
   return response.json() as Promise<StarterManifest>
+}
+
+export async function fetchBlueprint(
+  registryUrl: string,
+  slug: string,
+  token?: string | null,
+): Promise<BlueprintManifest> {
+  const url = new URL(`${registryUrl}/blueprints/${slug}/`)
+
+  const headers: Record<string, string> = {
+    'x-shipui-cli-version': cliPkg.version,
+  }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const response = await fetch(url.toString(), { headers })
+  if (response.status === 404) {
+    throw new Error(`Theme "${slug}" not found.`)
+  }
+  if (response.status === 403) {
+    const body = await response.json() as { error?: string; purchaseUrl?: string }
+    throw new Error(
+      `${body.error ?? 'Authentication required'}.${body.purchaseUrl ? ` Purchase at: ${body.purchaseUrl}` : ''}\nRun \`npx @voltenworks/shipui login\` after purchasing.`,
+    )
+  }
+  if (!response.ok) {
+    throw new Error(`Registry error: ${response.status}`)
+  }
+  return response.json() as Promise<BlueprintManifest>
 }
 
 export async function fetchRegistryIndexCached(registryUrl: string): Promise<RegistryIndex> {

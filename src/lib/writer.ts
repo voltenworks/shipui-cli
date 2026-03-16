@@ -189,29 +189,57 @@ export async function updateLayoutFonts(
     return null
   }
 
-  // Replace the font import line
   let updated = content
+  const hasExistingFontImport = /import\s*\{[^}]+\}\s*from\s*['"]next\/font\/google['"]/.test(content)
 
-  // Replace existing next/font/google import
-  updated = updated.replace(
-    /import\s*\{[^}]+\}\s*from\s*['"]next\/font\/google['"]/,
-    fontImportLine,
-  )
+  if (hasExistingFontImport) {
+    // Replace existing next/font/google import
+    updated = updated.replace(
+      /import\s*\{[^}]+\}\s*from\s*['"]next\/font\/google['"]/,
+      fontImportLine,
+    )
 
-  // Replace font const blocks (between the import and metadata/export)
-  const fontBlockRe = /const\s+\w+\s*=\s*(?:Geist|Geist_Mono|Inter|Cormorant_Garamond)\([^)]*\);?\s*/g
-  const existingBlocks = [...updated.matchAll(fontBlockRe)]
-  if (existingBlocks.length > 0) {
-    const firstStart = existingBlocks[0].index!
-    const lastEnd = existingBlocks[existingBlocks.length - 1].index! + existingBlocks[existingBlocks.length - 1][0].length
-    updated = updated.slice(0, firstStart) + fontConfigs.join('\n\n') + '\n\n' + updated.slice(lastEnd)
+    // Replace font const blocks (between the import and metadata/export)
+    const fontBlockRe = /const\s+\w+\s*=\s*\w+\([^)]*\);?\s*/g
+    const existingBlocks = [...updated.matchAll(fontBlockRe)].filter((m) =>
+      /(?:weight|subsets|variable)\s*:/.test(m[0]),
+    )
+    if (existingBlocks.length > 0) {
+      const firstStart = existingBlocks[0].index!
+      const lastEnd = existingBlocks[existingBlocks.length - 1].index! + existingBlocks[existingBlocks.length - 1][0].length
+      updated = updated.slice(0, firstStart) + fontConfigs.join('\n\n') + '\n\n' + updated.slice(lastEnd)
+    }
+  } else {
+    // No existing font import — insert after the last import line
+    const importLines = [...updated.matchAll(/^import\s+.+$/gm)]
+    if (importLines.length > 0) {
+      const lastImport = importLines[importLines.length - 1]
+      const insertAt = lastImport.index! + lastImport[0].length
+      const fontBlock = '\n' + fontImportLine + '\n\n' + fontConfigs.join('\n\n') + '\n'
+      updated = updated.slice(0, insertAt) + fontBlock + updated.slice(insertAt)
+    }
   }
 
-  // Replace className in body tag
-  updated = updated.replace(
-    /className=\{`[^`]*`\}/,
-    `className={\`${classNameExpr} antialiased\`}`,
-  )
+  // Replace or add className on body tag
+  if (/className=\{`[^`]*`\}/.test(updated)) {
+    updated = updated.replace(
+      /className=\{`[^`]*`\}/,
+      `className={\`${classNameExpr}\`}`,
+    )
+  } else {
+    // No template literal className — add one to <body>
+    updated = updated.replace(
+      /<body>/,
+      `<body className={\`${classNameExpr}\`}>`,
+    )
+    // Also handle <body className="..."> or <body className={...}>
+    if (!updated.includes(classNameExpr)) {
+      updated = updated.replace(
+        /<body\s+className="([^"]*)"/,
+        `<body className={\`$1 ${classNameExpr}\`}`,
+      )
+    }
+  }
 
   await fs.writeFile(layoutPath, updated, 'utf-8')
   return layoutPath

@@ -491,6 +491,24 @@ async function installStarter(
     if (!fsExtra.default.existsSync(envExamplePath)) {
       await fsExtra.default.writeFile(envExamplePath, envLines, 'utf-8')
       writeResult.written.push('.env.example')
+    } else {
+      // Append any missing vars (check by exact key name)
+      const existing = await fsExtra.default.readFile(envExamplePath, 'utf-8')
+      const existingKeys = new Set(
+        existing.split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line && !line.startsWith('#'))
+          .map((line) => line.split('=')[0]),
+      )
+      const missing = manifest.provider.env.filter((e) => {
+        const key = e.split('=')[0]
+        return !existingKeys.has(key)
+      })
+      if (missing.length > 0) {
+        const missingLines = missing.map((e) => e.includes('=') ? e : `${e}=`).join('\n') + '\n'
+        await fsExtra.default.appendFile(envExamplePath, missingLines)
+        writeResult.written.push('.env.example')
+      }
     }
   }
 
@@ -562,12 +580,30 @@ async function installAuthWiringOnly(
   console.log()
   console.log('Installing provider wiring only (preserving existing auth pages)...')
 
+  const projectRoot = path.resolve(process.cwd())
+
   for (const file of wiringFiles) {
+    // Validate path does not escape project directory
+    if (path.isAbsolute(file.path) || path.normalize(file.path).startsWith('..')) {
+      console.log(`  ${chalk.red('!')} Skipping unsafe path: ${file.path}`)
+      continue
+    }
+
     let targetPath: string
     if (file.path.startsWith('lib/')) {
       targetPath = path.join(process.cwd(), config.paths.lib, file.path.slice('lib/'.length))
     } else {
       targetPath = path.join(process.cwd(), prefix + file.path)
+    }
+
+    if (path.relative(projectRoot, path.resolve(targetPath)).startsWith('..')) {
+      console.log(`  ${chalk.red('!')} Skipping path that escapes project: ${file.path}`)
+      continue
+    }
+
+    if (options.dryRun) {
+      console.log(`  ${chalk.dim('~')} ${path.relative(process.cwd(), targetPath)} (dry run)`)
+      continue
     }
 
     // Rewrite import aliases

@@ -251,10 +251,10 @@ export async function updateLayoutFonts(
       `<body className={\`$1 ${classNameExpr}\`}`,
     )
   } else if (/<body\s+className=\{([^}]+)\}/.test(updated)) {
-    // Handle JSX expression className — wrap with template literal
+    // Handle JSX expression className — preserve existing expression and append fonts
     updated = updated.replace(
       /<body\s+className=\{([^}]+)\}/,
-      `<body className={\`${classNameExpr}\`}`,
+      (_, existing) => `<body className={\`\${${existing.trim()}} ${classNameExpr}\`}`,
     )
   } else {
     // No className — add one to bare <body>

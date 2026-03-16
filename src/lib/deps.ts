@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 
 type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
 
@@ -42,12 +42,13 @@ export function getMissingDeps(deps: string[]): string[] {
 }
 
 export function installDeps(deps: string[], pm: PackageManager): void {
-  const installCmd = {
-    npm: `npm install ${deps.join(' ')}`,
-    yarn: `yarn add ${deps.join(' ')}`,
-    pnpm: `pnpm add ${deps.join(' ')}`,
-    bun: `bun add ${deps.join(' ')}`,
+  const cmds: Record<PackageManager, { bin: string; args: string[] }> = {
+    npm: { bin: 'npm', args: ['install'] },
+    yarn: { bin: 'yarn', args: ['add'] },
+    pnpm: { bin: 'pnpm', args: ['add'] },
+    bun: { bin: 'bun', args: ['add'] },
   }
 
-  execSync(installCmd[pm], { stdio: 'inherit', cwd: process.cwd() })
+  const { bin, args } = cmds[pm]
+  execFileSync(bin, [...args, ...deps], { stdio: 'inherit', cwd: process.cwd() })
 }
